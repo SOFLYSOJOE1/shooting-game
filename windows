@@ -1,0 +1,96 @@
+#include <iostream>
+#include <conio.h>
+#include <windows.h>
+
+using namespace std;
+
+const int WIDTH = 40;  // Width of the game screen
+const int HEIGHT = 20; // Height of the game screen
+
+// Player variables
+int playerX = WIDTH / 2;     // Initial X position of the player
+int playerY = HEIGHT - 1;   // Initial Y position of the player
+const char playerChar = '^'; // Character representing the player
+
+// Bullet variables
+int bulletX = -1;            // X position of the bullet (-1 means not fired)
+int bulletY = -1;            // Y position of the bullet (-1 means not fired)
+const char bulletChar = '|'; // Character representing the bullet
+
+// Enemy variables
+int enemyX = WIDTH / 2;     // X position of the enemy
+int enemyY = 1;             // Y position of the enemy
+const char enemyChar = 'X'; // Character representing the enemy
+
+bool isGameOver = false;
+
+void drawGameScreen() {
+    system("cls");  // Clear the console screen
+
+    // Draw the game screen
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            if (x == playerX && y == playerY)
+                cout << playerChar;
+            else if (x == bulletX && y == bulletY)
+                cout << bulletChar;
+            else if (x == enemyX && y == enemyY)
+                cout << enemyChar;
+            else
+                cout << ' ';
+        }
+        cout << endl;
+    }
+}
+
+void updateGameLogic() {
+    // Move the bullet
+    if (bulletY > 0) {
+        bulletY--;
+        if (bulletY == enemyY && bulletX == enemyX) {
+            // Bullet hit the enemy
+            enemyX = rand() % WIDTH;  // Randomly move the enemy horizontally
+            enemyY = 1;               // Reset the enemy to the top
+            bulletX = -1;             // Reset the bullet
+            bulletY = -1;
+        }
+    }
+    else {
+        bulletX = -1;  // Reset the bullet if it goes off the screen
+        bulletY = -1;
+    }
+
+    // Move the enemy
+    enemyY++;
+    if (enemyY >= playerY) {
+        // Enemy reached the player
+        isGameOver = true;
+    }
+}
+
+void processPlayerInput() {
+    if (_kbhit()) {
+        char input = _getch();
+        if (input == 'a' && playerX > 0)
+            playerX--;  // Move the player left
+        else if (input == 'd' && playerX < WIDTH - 1)
+            playerX++;  // Move the player right
+        else if (input == ' ')
+            bulletX = playerX;  // Fire the bullet
+    }
+}
+
+int main() {
+    srand(static_cast<unsigned>(time(0)));  // Seed the random number generator
+
+    while (!isGameOver) {
+        drawGameScreen();
+        processPlayerInput();
+        updateGameLogic();
+        Sleep(50);  // Delay to control the game speed
+    }
+
+    cout << "Game Over!" << endl;
+
+    return 0;
+}
